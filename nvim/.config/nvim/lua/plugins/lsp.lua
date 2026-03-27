@@ -58,10 +58,22 @@ return {
         end,
       })
       local servers = {
-        "lua_ls", "ts_ls", "pyright", "bashls",
+        "lua_ls", "ts_ls", "pyright", "ruff", "bashls",
         "jsonls", "yamlls", "cssls", "html", "dockerls", "marksman",
         "rust_analyzer",
       }
+      vim.lsp.config("ruff", {
+        on_attach = function(client, _)
+          -- Disable hover in favor of Pyright
+          client.server_capabilities.hoverProvider = false
+        end,
+        init_options = {
+          settings = {
+            -- Let conform.nvim handle formatting
+            organizeImports = false,
+          },
+        },
+      })
       vim.lsp.config("lua_ls", {
         settings = {
           Lua = {
@@ -81,7 +93,7 @@ return {
       local mason_registry = require("mason-registry")
       local server_to_package = {
         lua_ls = "lua-language-server", ts_ls = "typescript-language-server",
-        pyright = "pyright", bashls = "bash-language-server",
+        pyright = "pyright", ruff = "ruff", bashls = "bash-language-server",
         jsonls = "json-lsp", yamlls = "yaml-language-server",
         cssls = "css-lsp", html = "html-lsp",
         dockerls = "dockerfile-language-server", marksman = "marksman",

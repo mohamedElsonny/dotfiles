@@ -8,6 +8,27 @@ return {
     local persistence = require("persistence")
     persistence.setup(opts)
 
+    -- Clean up neo-tree buffers after session restore to avoid E95 conflicts
+    vim.api.nvim_create_autocmd("SessionLoadPost", {
+      callback = function()
+        for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+          if vim.bo[buf].filetype == "neo-tree" or (vim.api.nvim_buf_get_name(buf)):match("neo%-tree") then
+            pcall(vim.api.nvim_buf_delete, buf, { force = true })
+          end
+        end
+        -- Re-trigger filetype detection so treesitter highlights restored buffers
+        vim.schedule(function()
+          for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+            if vim.api.nvim_buf_is_loaded(buf) and vim.bo[buf].filetype == "" then
+              vim.api.nvim_buf_call(buf, function()
+                vim.cmd("filetype detect")
+              end)
+            end
+          end
+        end)
+      end,
+    })
+
     -- Auto-restore session when opening Neovim with no arguments
     vim.api.nvim_create_autocmd("VimEnter", {
       nested = true,

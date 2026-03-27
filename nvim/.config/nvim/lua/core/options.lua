@@ -6,7 +6,8 @@ opt.shiftwidth = 2
 opt.expandtab = true
 opt.autoindent = true
 opt.smartindent = true
-opt.wrap = false
+opt.wrap = true
+opt.linebreak = true
 opt.ignorecase = true
 opt.smartcase = true
 opt.hlsearch = false
@@ -33,3 +34,17 @@ opt.list = true
 opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
 opt.fillchars = { eob = " " }
 opt.mouse = "a"
+opt.autoread = true
+
+-- Auto-reload files changed externally (e.g. by Claude Code)
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold", "CursorHoldI" }, {
+  pattern = "*",
+  command = "if mode() != 'c' | checktime | endif",
+})
+
+vim.api.nvim_create_autocmd("FileChangedShellPost", {
+  pattern = "*",
+  callback = function()
+    vim.notify("File changed on disk. Buffer reloaded.", vim.log.levels.WARN)
+  end,
+})
